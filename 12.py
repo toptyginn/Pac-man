@@ -7,7 +7,17 @@ class Board:
                       "00001000100010000", "11101110101110111", "11101000000010111", # цветв доски, 1 - синий, 0 - чёрн
                       "0" * 17, "11101000000010111", "11101000000010111", "00001011111010000", "01100000100000110",
                       "00101110101110100", "10100000000000101", "00001001110010000", "01111100100111110", "0" * 17]
-        self.mone = self.board.copy()  #монетки
+        self.mone = []
+        for i in self.board:
+            s = []
+            for j in i:
+                 if j == "0":
+                     s.append("1")
+                 else:
+                    s.append("0")
+            self.mone.append(s)
+        for i in self.mone:
+            print(i)
         self.left = 10
         self.top = 10
         self.cell_size = 30
@@ -48,16 +58,22 @@ class Board:
     def money(self, screen):
         for i in range(0, 17):
             for j in range(0, 17):
-                if self.mone[i][j] == "0":
+                if self.mone[i][j] == "1":
                     pygame.draw.circle(screen, pygame.Color(255, 215, 0), (10 + 30 * j + 15, 15 + 10 + 30 * i), 3)
 
+    def eat_money(self, x, y):
+        x1 = (x - 10) // 30
+        y1 = (y - 10) // 30
+        if self.mone[int(x1)][int(y1)] == "1":
+            self.mone[int(x1)][int(y1)] = "0"
 
     def checker(self, x, y):
-        one = (x - self.top) // self.cell_size
-        sec = (y - self.left) // self.cell_size
+        one = (x - 10) // 30
+        sec = (y - 10) // 30
         return self.board[int(sec)][int(one)]
-class Character:
+class Character(Board):
     def __init__(self, file, speed):
+        super().__init__(17, 17)
         self.file = file
         self.speed = speed
 
@@ -74,12 +90,7 @@ class Character:
 
     def draw(self, screen, x_pos, y_pos):
         global flag
-        #if x_pos > 20 and x_pos < 17 * 30 and y_pos > 20 and y_pos < 17 * 30:
-        #    flag = True
         pygame.draw.circle(screen, (255, 0, 0), (x_pos, y_pos), 10)
-        #else:
-        #    flag = False
-
 
 
 class Ghost(Character):
@@ -94,22 +105,19 @@ class Pacman(Character):
     def moving(self, screen, destinations):
         global x_pos
         global y_pos
-        if (destinations == "r" and x_pos < 17 * 30 and board.checker(x_pos + 10, y_pos) == "0" and
-                board.checker(x_pos, y_pos - 3) == "0" and board.checker(x_pos, y_pos + 3) == "0"):
-            #Board.money(self, self, screen)
+        if destinations == "r" and x_pos < 17 * 30 and board.checker(x_pos + 10, y_pos) == "0":
+
             x_pos += 0.5
-        elif (destinations == "l" and x_pos > 20 and board.checker(x_pos - 10, y_pos) == "0" and
-                board.checker(x_pos, y_pos - 3) == "0" and board.checker(x_pos, y_pos + 3) == "0"):
-
+            Board.eat_money(self, x_pos, y_pos)
+        elif destinations == "l" and x_pos > 20 and board.checker(x_pos - 10, y_pos) == "0":
             x_pos -= 0.5
-        elif (destinations == "u" and y_pos > 20 and board.checker(x_pos, y_pos - 10) == "0" and
-              board.checker(x_pos + 3, y_pos) == "0" and board.checker(x_pos - 3, y_pos) == "0"):
-
+            Board.eat_money(self, x_pos, y_pos)
+        elif destinations == "u" and y_pos > 20 and board.checker(x_pos, y_pos - 10) == "0":
             y_pos -= 0.5
-        elif (destinations == "d" and y_pos < 17 * 30 and board.checker(x_pos, y_pos + 10) == "0" and
-              board.checker(x_pos + 3, y_pos) == "0" and board.checker(x_pos - 3, y_pos) == "0"):
-
+            Board.eat_money(self, x_pos, y_pos)
+        elif destinations == "d" and y_pos < 17 * 30 and board.checker(x_pos, y_pos + 10) == "0":
             y_pos += 0.5
+            Board.eat_money(self, x_pos, y_pos)
 
 if __name__ == '__main__':
     pygame.init()
@@ -131,7 +139,7 @@ if __name__ == '__main__':
             if event.type == pygame.MOUSEBUTTONDOWN:
                 k = event.pos
                 print(k)
-                board.checker(k[0], k[1])
+                print(board.checker(k[0], k[1]))
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_LEFT:
                     press = "l"
@@ -141,11 +149,10 @@ if __name__ == '__main__':
                     press = "u"
                 if event.key == pygame.K_DOWN:
                     press = "d"
-        pacmen.moving(screen, press)
-
 
         screen.fill((0, 0, 0))
         board.render(screen)
         board.money(screen)
         pacmen.draw(screen, x_pos, y_pos)
+        pacmen.moving(screen, press)
         pygame.display.flip()
