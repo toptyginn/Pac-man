@@ -4,9 +4,10 @@ class Board:
         self.width = width
         self.height = height
         self.board = ["0" * 8 + "1" + "0" * 8, "01101110101110110", "0" * 17, "01101011111010110",
-                      "00001000100010000", "11101110101110111", "11101000000010111",
+                      "00001000100010000", "11101110101110111", "11101000000010111", # цветв доски, 1 - синий, 0 - чёрн
                       "0" * 17, "11101000000010111", "11101000000010111", "00001011111010000", "01100000100000110",
                       "00101110101110100", "10100000000000101", "00001001110010000", "01111100100111110", "0" * 17]
+        self.mone = self.board.copy()  #монетки
         self.left = 10
         self.top = 10
         self.cell_size = 30
@@ -26,7 +27,6 @@ class Board:
                          [10 + 17 * 30, 10 + 17 * 30], width=3)
         pygame.draw.line(screen, pygame.Color(0, 0, 255), [10 + 17 * 30, 10],
                          [10 + 17 * 30, 7 * 30 + 10], width=3)
-
         for i in range(0, 17):
             for j in range(0, 17):
                 if self.board[i][j] == "0":
@@ -45,34 +45,17 @@ class Board:
         pygame.draw.line(screen, pygame.Color(0, 0, 255), [10 + 11 * 30, 10 + 7 * 30],
                          [10 + 11 * 30, 9 * 30 + 10], width=3)
 
+    def money(self, screen):
+        for i in range(0, 17):
+            for j in range(0, 17):
+                if self.mone[i][j] == "0":
+                    pygame.draw.circle(screen, pygame.Color(255, 215, 0), (10 + 30 * j + 15, 15 + 10 + 30 * i), 3)
 
-
-
-
-
-        """for i in range(self.height):
-            for j in range(self.width):
-                if self.board[i][j] == 255:
-
-                    pygame.draw.rect(screen, pygame.Color(255, 255, 255),
-                                 (self.cell_size * j + self.left, self.cell_size * i + self.top, self.cell_size,
-                                                                      self.cell_size), 0)
-                else:
-                    pygame.draw.rect(screen, pygame.Color(255, 255, 255),
-                                     (self.cell_size * j + self.left, self.cell_size * i + self.top, self.cell_size,
-                                      self.cell_size), 1)"""
 
     def checker(self, x, y):
         one = (x - self.top) // self.cell_size
         sec = (y - self.left) // self.cell_size
         return self.board[int(sec)][int(one)]
-"""        if one < self.width and sec < self.height and x > self.left and y > self.top:
-            for i in range(self.height):
-                for j in range(self.width):
-                    xx = self.cell_size * j + self.left
-                    yy = self.cell_size * i + self.top
-                    if j == one and i == sec:
-                        self.board[i][j] = 255 - self.board[i][j]"""
 class Character:
     def __init__(self, file, speed):
         self.file = file
@@ -108,17 +91,25 @@ class Pacman(Character):
     def __init__(self, file, speed):
         super().__init__(file, speed)
 
-    def moving(self, destinations):
+    def moving(self, screen, destinations):
         global x_pos
         global y_pos
-        if destinations == "r" and x_pos < 17 * 30 and board.checker(x_pos + 0.25, y_pos) == "0":
-            x_pos += 0.25
-        elif destinations == "l" and x_pos > 20 and board.checker(x_pos - 0.25, y_pos) == "0":
-            x_pos -= 0.25
-        elif destinations == "u" and y_pos > 20 and board.checker(x_pos, y_pos - 0.25) == "0":
-            y_pos -= 0.25
-        elif destinations == "d" and y_pos < 17 * 30 and board.checker(x_pos, y_pos + 0.25) == "0":
-            y_pos += 0.25
+        if (destinations == "r" and x_pos < 17 * 30 and board.checker(x_pos + 10, y_pos) == "0" and
+                board.checker(x_pos, y_pos - 3) == "0" and board.checker(x_pos, y_pos + 3) == "0"):
+            #Board.money(self, self, screen)
+            x_pos += 0.5
+        elif (destinations == "l" and x_pos > 20 and board.checker(x_pos - 10, y_pos) == "0" and
+                board.checker(x_pos, y_pos - 3) == "0" and board.checker(x_pos, y_pos + 3) == "0"):
+
+            x_pos -= 0.5
+        elif (destinations == "u" and y_pos > 20 and board.checker(x_pos, y_pos - 10) == "0" and
+              board.checker(x_pos + 3, y_pos) == "0" and board.checker(x_pos - 3, y_pos) == "0"):
+
+            y_pos -= 0.5
+        elif (destinations == "d" and y_pos < 17 * 30 and board.checker(x_pos, y_pos + 10) == "0" and
+              board.checker(x_pos + 3, y_pos) == "0" and board.checker(x_pos - 3, y_pos) == "0"):
+
+            y_pos += 0.5
 
 if __name__ == '__main__':
     pygame.init()
@@ -150,10 +141,11 @@ if __name__ == '__main__':
                     press = "u"
                 if event.key == pygame.K_DOWN:
                     press = "d"
-        pacmen.moving(press)
+        pacmen.moving(screen, press)
 
 
         screen.fill((0, 0, 0))
         board.render(screen)
+        board.money(screen)
         pacmen.draw(screen, x_pos, y_pos)
         pygame.display.flip()
