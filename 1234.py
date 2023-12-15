@@ -149,8 +149,8 @@ class Board(pygame.sprite.Sprite):
     def eat_money(self, x, y):
         x1 = (x - 10) // 30
         y1 = (y - 10) // 30
-        if MONE[int(x1)][int(y1)] == "1":
-            MONE[int(x1)][int(y1)] = "0"
+        if MONE[int(y1)][int(x1)] == "1":      #!!!!!!!!!!!!!!!!!!!1
+            MONE[int(y1)][int(x1)] = "0"
 
     def checker(self, x, y):
         one = (x - 10) // 30
@@ -187,6 +187,7 @@ class Ghost(Character, pygame.sprite.Sprite):
         self.image = tile_images[file]
         self.rect = self.image.get_rect()
         all_sprites.add(self)
+        player_group.add(self)
 
 
 class Pacman(Character, pygame.sprite.Sprite):
@@ -196,6 +197,7 @@ class Pacman(Character, pygame.sprite.Sprite):
         self.image = tile_images[file]
         self.rect = self.image.get_rect()
         all_sprites.add(self)
+        player_group.add(self)
         self.rect.x = 100
         self.rect.y = 100
         self.speed = speed
@@ -205,10 +207,10 @@ class Pacman(Character, pygame.sprite.Sprite):
 
             self.rect.x += self.speed
             Board.eat_money(self, self.rect.x, self.rect.y)
-        elif destinations == "l" and self.rect.x > 20 and board.checker(self.rect.x - 10, self.rect.x) == "0":
+        elif destinations == "l" and self.rect.x > 10 and board.checker(self.rect.x - 10, self.rect.x) == "0":
             self.rect.x -= self.speed
             Board.eat_money(self, self.rect.x, self.rect.y)
-        elif destinations == "u" and self.rect.y > 20 and board.checker(self.rect.x, self.rect.y - 10) == "0":
+        elif destinations == "u" and self.rect.y > 10 and board.checker(self.rect.x, self.rect.y - 10) == "0":
             self.rect.y -= self.speed
             Board.eat_money(self, self.rect.x, self.rect.y)
         elif destinations == "d" and self.rect.y < 17 * 30 and board.checker(self.rect.x, self.rect.y + 10) == "0":
@@ -229,7 +231,7 @@ if __name__ == '__main__':
     running = True
     x_pos = 300
     y_pos = 300
-    pacmen = Pacman("pac", 2)
+    pacmen = Pacman("pac", 0.5)
     press = "r"
     flag = True
 
@@ -254,7 +256,7 @@ if __name__ == '__main__':
         screen.fill((0, 0, 0))
         board.render(screen)
         board.money(screen)
-        all_sprites.draw(screen)
+        player_group.draw(screen)
         #pacmen.draw(screen, x_pos, y_pos)
         pacmen.moving(screen, press)
         pygame.display.flip()
