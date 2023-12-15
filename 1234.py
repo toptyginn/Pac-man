@@ -73,7 +73,7 @@ BOARD = load_level("map2.map")
 tile_images = {
     'pac': load_image('pac.png'),
     'ghost': load_image('ghost1.png')}
-# 'money': load_image('ghost1.png')
+# 'money': load_imaghe('ghost1.png')
 
 tile_width = tile_height = 50
 player = None
