@@ -109,7 +109,7 @@ class Board(pygame.sprite.Sprite):
         self.rects = []
 
     def render(self, screen):
-        global x_pos
+        #global x_pos
         pygame.draw.line(screen, pygame.Color(0, 0, 255), [10, 10],
                          [10 + 17 * 30, 10], width=3)
         pygame.draw.line(screen, pygame.Color(0, 0, 255), [10, 10 + 17 * 30],
@@ -196,23 +196,27 @@ class Pacman(Character, pygame.sprite.Sprite):
         self.image = tile_images[file]
         self.rect = self.image.get_rect()
         all_sprites.add(self)
+        self.rect.x = 100
+        self.rect.y = 100
+        self.speed = speed
 
     def moving(self, screen, destinations):
-        global x_pos
-        global y_pos
-        if destinations == "r" and x_pos < 17 * 30 and board.checker(x_pos + 10, y_pos) == "0":
+        if destinations == "r" and self.rect.x < 17 * 30 and board.checker(self.rect.x + 10, self.rect.x) == "0":
 
-            x_pos += 0.5
-            Board.eat_money(self, x_pos, y_pos)
-        elif destinations == "l" and x_pos > 20 and board.checker(x_pos - 10, y_pos) == "0":
-            x_pos -= 0.5
-            Board.eat_money(self, x_pos, y_pos)
-        elif destinations == "u" and y_pos > 20 and board.checker(x_pos, y_pos - 10) == "0":
-            y_pos -= 0.5
-            Board.eat_money(self, x_pos, y_pos)
-        elif destinations == "d" and y_pos < 17 * 30 and board.checker(x_pos, y_pos + 10) == "0":
-            y_pos += 0.5
-            Board.eat_money(self, x_pos, y_pos)
+            self.rect.x += self.speed
+            Board.eat_money(self, self.rect.x, self.rect.y)
+        elif destinations == "l" and self.rect.x > 20 and board.checker(self.rect.x - 10, self.rect.x) == "0":
+            self.rect.x -= self.speed
+            Board.eat_money(self, self.rect.x, self.rect.y)
+        elif destinations == "u" and self.rect.y > 20 and board.checker(self.rect.x, self.rect.y - 10) == "0":
+            self.rect.y -= self.speed
+            Board.eat_money(self, self.rect.x, self.rect.y)
+        elif destinations == "d" and self.rect.y < 17 * 30 and board.checker(self.rect.x, self.rect.y + 10) == "0":
+            self.rect.y += self.speed
+            Board.eat_money(self, self.rect.x, self.rect.y)
+
+    """def draw(self, screen):
+        pygame.draw.circle(screen, (255, 0, 0), (x_pos, y_pos), 10)"""
 
 
 if __name__ == '__main__':
@@ -250,6 +254,7 @@ if __name__ == '__main__':
         screen.fill((0, 0, 0))
         board.render(screen)
         board.money(screen)
-        pacmen.draw(screen, x_pos, y_pos)
+        all_sprites.draw(screen)
+        #pacmen.draw(screen, x_pos, y_pos)
         pacmen.moving(screen, press)
         pygame.display.flip()
