@@ -7,6 +7,7 @@ def terminate():
     pygame.quit()
     sys.exit()
 
+
 def load_level(filename):
     filename = "data/" + filename
     # читаем уровень, убирая символы перевода строки
@@ -19,6 +20,7 @@ def load_level(filename):
     # дополняем каждую строку пустыми клетками ('.')
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
+
 def load_image(name, colorkey=None):
     print('data', name)
     fullname = os.path.join('data', name)
@@ -28,6 +30,7 @@ def load_image(name, colorkey=None):
         sys.exit()
     image = pygame.image.load(fullname)
     return image
+
 
 def start_screen():
     intro_text = ["Pacman", "",
@@ -70,7 +73,7 @@ BOARD = load_level("map2.map")
 tile_images = {
     'pac': load_image('pac.png'),
     'ghost': load_image('ghost1.png')}
-    #'money': load_image('ghost1.png')
+# 'money': load_image('ghost1.png')
 
 tile_width = tile_height = 50
 player = None
@@ -94,12 +97,11 @@ for i in BOARD:
 class Board(pygame.sprite.Sprite):
     def __init__(self, width, height):
         super().__init__(tiles_group, all_sprites)
-        #self.image = tile_images[tile_type]
-        #self.rect = self.image.get_rect().move(
+        # self.image = tile_images[tile_type]
+        # self.rect = self.image.get_rect().move(
         #    tile_width * pos_x, tile_height * pos_y)
         self.width = width
         self.height = height
-
 
         self.left = 10
         self.top = 10
