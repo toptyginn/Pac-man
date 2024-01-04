@@ -1,6 +1,8 @@
 import pygame
 import sys
 import os
+import random
+
 
 def load_level(filename):
     filename = "data/" + filename
@@ -11,7 +13,7 @@ def load_level(filename):
 
 
 def load_image(name, colorkey=None):
-    #print('data', name)
+    # print('data', name)
     fullname = os.path.join('data', name)
 
     if not os.path.isfile(fullname):
@@ -22,7 +24,6 @@ def load_image(name, colorkey=None):
 
 
 def start_end_screen(lev, intro_text, WIDTH, HEIGHT, im):
-
     size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
     fon = pygame.transform.scale(load_image(im), (WIDTH, HEIGHT))
@@ -46,7 +47,6 @@ def start_end_screen(lev, intro_text, WIDTH, HEIGHT, im):
                 return
         pygame.display.flip()
         # clock.tick(FPS)
-
 
 
 class Board(pygame.sprite.Sprite):
@@ -75,7 +75,6 @@ class Board(pygame.sprite.Sprite):
         pygame.draw.line(screen, pygame.Color(0, 0, 255), [10 + self.pazmer * 30, 10],
                          [10 + self.pazmer * 30, ((self.pazmer // 2) - 1) * 30 + 10], width=3)
 
-
         for i in range(0, self.pazmer):
             for j in range(0, self.pazmer):
                 if BOARD[i][j] == "0":
@@ -83,9 +82,8 @@ class Board(pygame.sprite.Sprite):
                 else:
                     pygame.draw.rect(screen, pygame.Color(0, 0, 255), (10 + 30 * j, 10 + 30 * i, 30, 30))
 
-
     def money(self, screen, pazmer):
-        #print(pazmer)
+        # print(pazmer)
         """for i in sp_mone:
             print(i)
         print(pazmer)"""
@@ -103,7 +101,7 @@ class Board(pygame.sprite.Sprite):
     def checker(self, x, y, boardd):
         one = (x - 10) // 30
         sec = (y - 10) // 30
-        #print(len(boardd), one, sec, x, y, "'ccchhchhcc")
+        # print(len(boardd), one, sec, x, y, "'ccchhchhcc")
 
         return boardd[int(sec)][int(one)]
 
@@ -118,60 +116,52 @@ class Board(pygame.sprite.Sprite):
 
 
 class Character(pygame.sprite.Sprite):
-    def __init__(self, file, speed):
-        super().__init__(player_group, all_sprites)
-
-
-
-
-class Ghost(pygame.sprite.Sprite):
-    def __init__(self, file, speed):
+    def __init__(self, file, speed, lev):
         super().__init__(player_group, all_sprites)
         self.image = tile_images[file]
-        self.rect = self.image.get_rect()
-        all_sprites.add(self)
-        player_group.add(self)
-
-
-class Pacman(pygame.sprite.Sprite):
-    def __init__(self, file, speed, x, y):
-        super().__init__(player_group, all_sprites)
-        self.image = load_image('pac.png')
         self.image.set_colorkey((255, 255, 255))
         self.rect = self.image.get_rect()
+        self.rect.x, self.rect.y = start_pos_level[file][lev - 1]
         all_sprites.add(self)
         player_group.add(self)
-        self.rect.x = x
-        self.rect.y = y
-
-    def moving(self, speed_pac, pazmer, destinations, boarddd):
+        self.speed = speed
+    def moving(self, pazmer, destinations, boarddd):
         if destinations == "r":
-            if self.rect.x + 10 >= pazmer * 30 + 10 and (pazmer // 2 - 1) * 30 + 10 < self.rect.y < (pazmer // 2) * 30 + 10:
+            if self.rect.x + 10 >= pazmer * 30 + 10 and (pazmer // 2 - 1) * 30 + 10 < self.rect.y < (
+                    pazmer // 2) * 30 + 10:
                 self.rect.x = 10
             else:
                 if self.rect.x < pazmer * 30 and board.checker(self.rect.x + 10, self.rect.y, boarddd) == "0":
-                    self.rect.x += speed_pac
+                    self.rect.x += self.speed
                 else:
-                    pass  #print(self.rect.x, pazmer, board.checker(self.rect.x + 10, self.rect.y, boarddd))
+                    pass  # print(self.rect.x, pazmer, board.checker(self.rect.x + 10, self.rect.y, boarddd))
         elif destinations == "l":
 
             if self.rect.x - 10 <= 10 and (pazmer // 2 - 1) * 30 + 10 < self.rect.y < (pazmer // 2) * 30 + 10:
                 self.rect.x = pazmer * 30
             else:
                 if self.rect.x > 10 and board.checker(self.rect.x - 10, self.rect.y, boarddd) == "0":
-                    self.rect.x -= speed_pac
+                    self.rect.x -= self.speed
         elif destinations == "u" and self.rect.y > 10 and board.checker(self.rect.x, self.rect.y - 10, boarddd) == "0":
-            self.rect.y -= speed_pac
+            self.rect.y -= self.speed
         elif (destinations == "d" and self.rect.y < pazmer * 30 and
               board.checker(self.rect.x, self.rect.y + 10, boarddd) == "0"):
-            self.rect.y += speed_pac
+            self.rect.y += self.speed
+        #Board.eat_money(self, self.rect.x, self.rect.y)
+
+
+class Pacman(Character):
+    def __init__(self, speed, lev):
+        super().__init__('pac', speed, lev)
+
+    def moving(self, pazmer, destinations, boarddd):
+        Character.moving(self, pazmer, destinations, boarddd)
         Board.eat_money(self, self.rect.x, self.rect.y)
 
-    def start_pos(self, lev):
-        #self.rect.x = 10
-        #self.rect.y = 10
-        self.rect.x, self.rect.y = start_pos_level[lev]
 
+class Ghost(Character):
+    def __init__(self, speed, lev):
+        super().__init__('ghost', speed, lev)
 
 if __name__ == '__main__':
     sl_map = {
@@ -180,12 +170,11 @@ if __name__ == '__main__':
         3: "map3.map"}
     tile_images = {
         'pac': load_image('pac.png'),
-        'ghost': load_image('ghost1.png')}
+        'ghost': load_image('ghost2.png')}
     # 'money': load_imaghe('ghost1.png')
     start_pos_level = {
-        1: (8 * 30 + 10, 10 * 30 + 10),
-        2: (10 * 30 + 10, 12 * 30 + 10),
-        3: (12 * 30 + 10, 12 * 30 + 10)
+        'pac': [(8 * 30 + 10, 10 * 30 + 10), (10 * 30 + 10, 12 * 30 + 10), (12 * 30 + 10, 12 * 30 + 10)],
+        'ghost': [(7 * 30 + 10, 8 * 30 + 10), (200, 200), (7 * 30 + 10, 8 * 30 + 10)]
     }
     tile_width = tile_height = 50
     player = None
@@ -194,15 +183,15 @@ if __name__ == '__main__':
     player_group = pygame.sprite.Group()
     pygame.init()
     razmer1 = len(load_level(sl_map[1]))
-    #print(razmer1, "razmer1")
+    # print(razmer1, "razmer1")
     x_pos = 30 * (razmer1 // 2) + 10
     y_pos = 30 * (razmer1 // 2 + 2) + 10
-    #print(x_pos, y_pos)
-    pacmen = Pacman("pac", 1, x_pos, y_pos)
+    # print(x_pos, y_pos)
+
 
     for level in [1, 2, 3]:
         BOARD = load_level(sl_map[level])
-        #print(BOARD)
+        # print(BOARD)
         sp_mone = []
         for i in BOARD:
             s = []
@@ -212,7 +201,7 @@ if __name__ == '__main__':
                 else:
                     s.append("0")
             sp_mone.append(s)
-        #for i in sp_mone:
+        # for i in sp_mone:
         #    print(i)
         razmer_screen = len(BOARD)
         intro_text = ["Pacman", "",
@@ -226,17 +215,18 @@ if __name__ == '__main__':
         board = Board(razmer_screen)
         running = True
         press = "r"
-        pacmen.start_pos(level)
+        pacmen = Pacman(1, level)
+        ghost = Ghost(0.5, level)
 
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    #print(sp_mone)
+                    # print(sp_mone)
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     k = event.pos
                     print(k)
-                    #print(board.checker(k[0], k[1]))
+                    # print(board.checker(k[0], k[1]))
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         press = "l"
@@ -258,8 +248,16 @@ if __name__ == '__main__':
             player_group.draw(screen)
             if level == 2:
                 pass
-            #print(razmer_screen, "razmer_screen")
-            pacmen.moving(1, razmer_screen, press, BOARD)
+            # print(razmer_screen, "razmer_screen")
+            pacmen.moving(razmer_screen, press, BOARD)
+            a = random.choice(["u", "l"])
+            print(a)
+            ghost.moving(razmer_screen, random.choice(["r", "l", "u", "l"]), BOARD)
             pygame.display.flip()
-    intro_text = ["Вы прошли игру!"] #!!!!!!!!!111
+        all_sprites.remove(pacmen)
+        player_group.remove(pacmen)
+
+        all_sprites.remove(ghost)
+        player_group.remove(ghost)
+    intro_text = ["Вы прошли игру!"]  # !!!!!!!!!111
     start_end_screen(level, intro_text, 800, 500, 'end.jpg')
