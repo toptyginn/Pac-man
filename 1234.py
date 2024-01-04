@@ -52,16 +52,13 @@ def start_end_screen(lev, intro_text, WIDTH, HEIGHT, im):
 class Board(pygame.sprite.Sprite):
     def __init__(self, width):
         super().__init__(tiles_group, all_sprites)
-        # self.image = tile_images[tile_type]
-        # self.rect = self.image.get_rect().move(
-        #    tile_width * pos_x, tile_height * pos_y)
         self.pazmer = width
-        # self.height = height
-
         self.left = 10
         self.top = 10
         self.cell_size = 30
         self.rects = []
+        all_sprites.add(self)
+        tiles_group.add(self)
 
     def render(self, screen):
         # global x_pos
@@ -77,6 +74,8 @@ class Board(pygame.sprite.Sprite):
                          [10 + self.pazmer * 30, 10 + self.pazmer * 30], width=3)
         pygame.draw.line(screen, pygame.Color(0, 0, 255), [10 + self.pazmer * 30, 10],
                          [10 + self.pazmer * 30, ((self.pazmer // 2) - 1) * 30 + 10], width=3)
+
+
         for i in range(0, self.pazmer):
             for j in range(0, self.pazmer):
                 if BOARD[i][j] == "0":
@@ -85,9 +84,13 @@ class Board(pygame.sprite.Sprite):
                     pygame.draw.rect(screen, pygame.Color(0, 0, 255), (10 + 30 * j, 10 + 30 * i, 30, 30))
 
 
-    def money(self, screen):
-        for i in range(0, self.pazmer):
-            for j in range(0, self.pazmer):
+    def money(self, screen, pazmer):
+        #print(pazmer)
+        """for i in sp_mone:
+            print(i)
+        print(pazmer)"""
+        for i in range(0, pazmer):
+            for j in range(0, pazmer):
                 if sp_mone[i][j] == "1":
                     pygame.draw.circle(screen, pygame.Color(255, 215, 0), (10 + 30 * j + 15, 15 + 10 + 30 * i), 3)
 
@@ -118,18 +121,6 @@ class Character(pygame.sprite.Sprite):
     def __init__(self, file, speed):
         super().__init__(player_group, all_sprites)
 
-        self.file = file
-        #self.speed = speed
-
-    def moving(self, destination):
-        pass
-
-    def death(self):
-        pass
-
-    def get_pos(self):
-        x, y = (0, 0)
-        return (x, y)
 
 
 
@@ -145,7 +136,8 @@ class Ghost(pygame.sprite.Sprite):
 class Pacman(pygame.sprite.Sprite):
     def __init__(self, file, speed, x, y):
         super().__init__(player_group, all_sprites)
-        self.image = tile_images[file]
+        self.image = load_image('pac.png')
+        self.image.set_colorkey((255, 255, 255))
         self.rect = self.image.get_rect()
         all_sprites.add(self)
         player_group.add(self)
@@ -208,19 +200,20 @@ if __name__ == '__main__':
     #print(x_pos, y_pos)
     pacmen = Pacman("pac", 1, x_pos, y_pos)
 
-    for level in [3]:
+    for level in [1, 2, 3]:
         BOARD = load_level(sl_map[level])
         #print(BOARD)
         sp_mone = []
         for i in BOARD:
             s = []
-            for j in i:
+            for j in i[0:-1]:
                 if j == "0":
                     s.append("1")
                 else:
                     s.append("0")
             sp_mone.append(s)
-        #print(len(BOARD))
+        #for i in sp_mone:
+        #    print(i)
         razmer_screen = len(BOARD)
         intro_text = ["Pacman", "",
                       "Уровень " + str(level),
@@ -238,6 +231,7 @@ if __name__ == '__main__':
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
+                    #print(sp_mone)
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     k = event.pos
@@ -253,14 +247,14 @@ if __name__ == '__main__':
                     if event.key == pygame.K_DOWN:
                         press = "d"
                 if board.all_money():
-                    intro_text = ["Pacman", "",
+                    intro_text = ["Pacman",
                                   "Вы выиграли!"]
                     start_end_screen(level, intro_text, 800, 500, 'end.jpg')
                     running = False
 
             screen.fill((0, 0, 0))
             board.render(screen)
-            board.money(screen)
+            board.money(screen, razmer_screen)
             player_group.draw(screen)
             if level == 2:
                 pass
