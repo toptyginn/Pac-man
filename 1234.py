@@ -175,15 +175,26 @@ class Pacman(pygame.sprite.Sprite):
             self.rect.y += speed_pac
         Board.eat_money(self, self.rect.x, self.rect.y)
 
+    def start_pos(self, lev):
+        #self.rect.x = 10
+        #self.rect.y = 10
+        self.rect.x, self.rect.y = start_pos_level[lev]
+
 
 if __name__ == '__main__':
     sl_map = {
         1: "map1.map",
-        2: "map2.map"}
+        2: "map2.map",
+        3: "map3.map"}
     tile_images = {
         'pac': load_image('pac.png'),
         'ghost': load_image('ghost1.png')}
     # 'money': load_imaghe('ghost1.png')
+    start_pos_level = {
+        1: (8 * 30 + 10, 10 * 30 + 10),
+        2: (10 * 30 + 10, 12 * 30 + 10),
+        3: (12 * 30 + 10, 12 * 30 + 10)
+    }
     tile_width = tile_height = 50
     player = None
     all_sprites = pygame.sprite.Group()
@@ -197,7 +208,7 @@ if __name__ == '__main__':
     #print(x_pos, y_pos)
     pacmen = Pacman("pac", 1, x_pos, y_pos)
 
-    for level in [1, 2]:
+    for level in [3]:
         BOARD = load_level(sl_map[level])
         #print(BOARD)
         sp_mone = []
@@ -222,7 +233,7 @@ if __name__ == '__main__':
         board = Board(razmer_screen)
         running = True
         press = "r"
-
+        pacmen.start_pos(level)
 
         while running:
             for event in pygame.event.get():
