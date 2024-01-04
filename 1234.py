@@ -4,14 +4,9 @@ import os
 
 def load_level(filename):
     filename = "data/" + filename
-    # читаем уровень, убирая символы перевода строки
     with open(filename, 'r') as mapFile:
         level_map = [line.strip() for line in mapFile]
-
-    # и подсчитываем максимальную длину
     max_width = max(map(len, level_map))
-
-    # дополняем каждую строку пустыми клетками ('.')
     return list(map(lambda x: x.ljust(max_width, '.'), level_map))
 
 
@@ -26,16 +21,11 @@ def load_image(name, colorkey=None):
     return image
 
 
-def start_screen(lev):
-    intro_text = ["Pacman", "",
-                  "Уровень " + str(lev),
-                  "Ваша цель: собрать все монеты,",
-                  "при этом не столкнувшись с приведениями"]
-    WIDTH = 900
-    HEIGHT = 600
+def start_end_screen(lev, intro_text, WIDTH, HEIGHT, im):
+
     size = WIDTH, HEIGHT
     screen = pygame.display.set_mode(size)
-    fon = pygame.transform.scale(load_image('fon1.jpg'), (WIDTH, HEIGHT))
+    fon = pygame.transform.scale(load_image(im), (WIDTH, HEIGHT))
     screen.blit(fon, (0, 0))
     font = pygame.font.Font(None, 30)
     text_coord = 50
@@ -56,40 +46,6 @@ def start_screen(lev):
                 return
         pygame.display.flip()
         # clock.tick(FPS)
-
-
-def end_screen(lev):
-    intro_text = ["Pacman", "",
-                  "Вы выиграли!",
-                  "Вы перешли на " + str(lev) + " уровень,",
-                  "поэтому скорость приведений будет больше"]
-    WIDTH = 800
-    HEIGHT = 500
-    size = WIDTH, HEIGHT
-    screen = pygame.display.set_mode(size)
-    fon = pygame.transform.scale(load_image('end.jpg'), (WIDTH, HEIGHT))
-    screen.blit(fon, (0, 0))
-    font = pygame.font.Font(None, 30)
-    text_coord = 50
-    for line in intro_text:
-        string_rendered = font.render(line, 1, pygame.Color('white'))
-        intro_rect = string_rendered.get_rect()
-        text_coord += 10
-        intro_rect.top = text_coord
-        intro_rect.x = 10
-        text_coord += intro_rect.height
-        screen.blit(string_rendered, intro_rect)
-    while True:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
-                print("qwee")
-                return
-        pygame.display.flip()
-        # clock.tick(FPS)
-
 
 
 
@@ -141,10 +97,12 @@ class Board(pygame.sprite.Sprite):
         if sp_mone[int(y1)][int(x1)] == "1":  # !!!!!!!!!!!!!!!!!!!1
             sp_mone[int(y1)][int(x1)] = "0"
 
-    def checker(self, x, y):
+    def checker(self, x, y, boardd):
         one = (x - 10) // 30
         sec = (y - 10) // 30
-        return BOARD[int(sec)][int(one)]
+        #print(len(boardd), one, sec, x, y, "'ccchhchhcc")
+
+        return boardd[int(sec)][int(one)]
 
     def all_money(self):
         flag = True
@@ -161,7 +119,7 @@ class Character(pygame.sprite.Sprite):
         super().__init__(player_group, all_sprites)
 
         self.file = file
-        self.speed = speed
+        #self.speed = speed
 
     def moving(self, destination):
         pass
@@ -173,11 +131,9 @@ class Character(pygame.sprite.Sprite):
         x, y = (0, 0)
         return (x, y)
 
-    def draw(self, screen, x_pos, y_pos):
-        pygame.draw.circle(screen, (255, 0, 0), (x_pos, y_pos), 10)
 
 
-class Ghost(Character, pygame.sprite.Sprite):
+class Ghost(pygame.sprite.Sprite):
     def __init__(self, file, speed):
         super().__init__(player_group, all_sprites)
         self.image = tile_images[file]
@@ -186,8 +142,8 @@ class Ghost(Character, pygame.sprite.Sprite):
         player_group.add(self)
 
 
-class Pacman(Character, pygame.sprite.Sprite):
-    def __init__(self, file, speed, pazmer, x, y):
+class Pacman(pygame.sprite.Sprite):
+    def __init__(self, file, speed, x, y):
         super().__init__(player_group, all_sprites)
         self.image = tile_images[file]
         self.rect = self.image.get_rect()
@@ -195,28 +151,28 @@ class Pacman(Character, pygame.sprite.Sprite):
         player_group.add(self)
         self.rect.x = x
         self.rect.y = y
-        self.speed = speed
-        self.pazmer = pazmer
 
-    def moving(self, screen, destinations):
+    def moving(self, speed_pac, pazmer, destinations, boarddd):
         if destinations == "r":
-            if self.rect.x + 10 >= self.pazmer * 30 + 10 and (self.pazmer // 2 - 1) * 30 + 10 < self.rect.y < (self.pazmer // 2) * 30 + 10:
+            if self.rect.x + 10 >= pazmer * 30 + 10 and (pazmer // 2 - 1) * 30 + 10 < self.rect.y < (pazmer // 2) * 30 + 10:
                 self.rect.x = 10
             else:
-                if self.rect.x < self.pazmer * 30 and board.checker(self.rect.x + 10, self.rect.y) == "0":
-                    self.rect.x += self.speed
+                if self.rect.x < pazmer * 30 and board.checker(self.rect.x + 10, self.rect.y, boarddd) == "0":
+                    self.rect.x += speed_pac
+                else:
+                    pass  #print(self.rect.x, pazmer, board.checker(self.rect.x + 10, self.rect.y, boarddd))
         elif destinations == "l":
 
-            if self.rect.x - 10 <= 10 and (self.pazmer // 2 - 1) * 30 + 10 < self.rect.y < (self.pazmer // 2) * 30 + 10:
-                self.rect.x = self.pazmer * 30
+            if self.rect.x - 10 <= 10 and (pazmer // 2 - 1) * 30 + 10 < self.rect.y < (pazmer // 2) * 30 + 10:
+                self.rect.x = pazmer * 30
             else:
-                if self.rect.x > 10 and board.checker(self.rect.x - 10, self.rect.y) == "0":
-                    self.rect.x -= self.speed
-        elif destinations == "u" and self.rect.y > 10 and board.checker(self.rect.x, self.rect.y - 10) == "0":
-            self.rect.y -= self.speed
-        elif (destinations == "d" and self.rect.y < self.pazmer * 30 and
-              board.checker(self.rect.x, self.rect.y + 10) == "0"):
-            self.rect.y += self.speed
+                if self.rect.x > 10 and board.checker(self.rect.x - 10, self.rect.y, boarddd) == "0":
+                    self.rect.x -= speed_pac
+        elif destinations == "u" and self.rect.y > 10 and board.checker(self.rect.x, self.rect.y - 10, boarddd) == "0":
+            self.rect.y -= speed_pac
+        elif (destinations == "d" and self.rect.y < pazmer * 30 and
+              board.checker(self.rect.x, self.rect.y + 10, boarddd) == "0"):
+            self.rect.y += speed_pac
         Board.eat_money(self, self.rect.x, self.rect.y)
 
 
@@ -234,9 +190,16 @@ if __name__ == '__main__':
     tiles_group = pygame.sprite.Group()
     player_group = pygame.sprite.Group()
     pygame.init()
+    razmer1 = len(load_level(sl_map[1]))
+    #print(razmer1, "razmer1")
+    x_pos = 30 * (razmer1 // 2) + 10
+    y_pos = 30 * (razmer1 // 2 + 2) + 10
+    #print(x_pos, y_pos)
+    pacmen = Pacman("pac", 1, x_pos, y_pos)
 
     for level in [1, 2]:
         BOARD = load_level(sl_map[level])
+        #print(BOARD)
         sp_mone = []
         for i in BOARD:
             s = []
@@ -246,28 +209,29 @@ if __name__ == '__main__':
                 else:
                     s.append("0")
             sp_mone.append(s)
-        print(len(BOARD))
+        #print(len(BOARD))
         razmer_screen = len(BOARD)
-        start_screen(level)
+        intro_text = ["Pacman", "",
+                      "Уровень " + str(level),
+                      "Ваша цель: собрать все монеты,",
+                      "при этом не столкнувшись с приведениями"]
+        start_end_screen(level, intro_text, 900, 600, 'fon1.jpg')
         pygame.display.set_caption('Pacman')
         size = width, height = razmer_screen * 30 + 20, razmer_screen * 30 + 20
         screen = pygame.display.set_mode(size)
         board = Board(razmer_screen)
         running = True
-        x_pos = 30 * (razmer_screen // 2) + 10
-        y_pos = 30 * (razmer_screen // 2 + 2) + 10
-        pacmen = Pacman("pac", 1, razmer_screen, x_pos, y_pos)
         press = "r"
+
 
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     running = False
-
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     k = event.pos
                     print(k)
-                    print(board.checker(k[0], k[1]))
+                    #print(board.checker(k[0], k[1]))
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         press = "l"
@@ -278,12 +242,19 @@ if __name__ == '__main__':
                     if event.key == pygame.K_DOWN:
                         press = "d"
                 if board.all_money():
-                    end_screen(level + 1)
+                    intro_text = ["Pacman", "",
+                                  "Вы выиграли!"]
+                    start_end_screen(level, intro_text, 800, 500, 'end.jpg')
                     running = False
 
             screen.fill((0, 0, 0))
             board.render(screen)
             board.money(screen)
             player_group.draw(screen)
-            pacmen.moving(screen, press)
+            if level == 2:
+                pass
+            #print(razmer_screen, "razmer_screen")
+            pacmen.moving(1, razmer_screen, press, BOARD)
             pygame.display.flip()
+    intro_text = ["Вы прошли игру!"] #!!!!!!!!!111
+    start_end_screen(level, intro_text, 800, 500, 'end.jpg')
