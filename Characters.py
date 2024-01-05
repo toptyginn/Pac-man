@@ -28,7 +28,6 @@ class Character(pygame.sprite.Sprite):
 
     # Find a new position for the player
     def update(self, walls, gate):
-
         old_x = self.rect.left
         new_x = old_x + self.change_x
         prev_x = old_x + self.pre_x
@@ -38,8 +37,7 @@ class Character(pygame.sprite.Sprite):
         new_y = old_y + self.change_y
         prev_y = old_y + self.pre_y
 
-        x_collide = pygame.sprite.spritecollide(self, walls, False)
-        if x_collide:
+        if pygame.sprite.collide_mask(self, walls):
             self.rect.left = old_x
             self.rect.top=prev_y
             y_collide = pygame.sprite.spritecollide(self, walls, False)
@@ -50,11 +48,11 @@ class Character(pygame.sprite.Sprite):
 
             self.rect.top = new_y
 
-        if gate != False:
-            gate_hit = pygame.sprite.spritecollide(self, gate, False)
-            if gate_hit:
-                self.rect.left = old_x
-                self.rect.top = old_y
+        # if gate != False:
+        #     gate_hit = pygame.sprite.spritecollide(self, gate, False)
+        #     if gate_hit:
+        #         self.rect.left = old_x
+        #         self.rect.top = old_y
 
 
 class Ghost(Character):
