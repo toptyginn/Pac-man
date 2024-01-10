@@ -55,10 +55,14 @@ class Wall(pygame.sprite.Sprite):
 
         self.image = pygame.Surface([width, height])
         self.image.fill(color)
+        self.color = color
 
         self.rect = self.image.get_rect()
         self.rect.top = y
         self.rect.left = x
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, self.color, self.rect)
 
 
 class Board(pygame.sprite.Sprite):
@@ -93,8 +97,7 @@ class Board(pygame.sprite.Sprite):
 
                     pygame.draw.rect(screen, pygame.Color(0, 0, 0), (10 + 30 * j, 10 + 30 * i, 30, 30))
                 else:
-                    Wall(10 + 30 * j, 10 + 30 * i, 30, 30, (0, 0, 255))
-                    pygame.draw.rect(screen, pygame.Color(0, 0, 255), (10 + 30 * j, 10 + 30 * i, 30, 30))
+                    Wall(10 + 30 * j, 10 + 30 * i, 30, 30, (0, 0, 255)).draw(screen)
 
     def money(self, screen, pazmer):
         # print(pazmer)
@@ -143,6 +146,7 @@ class Character(pygame.sprite.Sprite):
         player_group.add(self)
         self.speed = speed
     def moving(self, pazmer, destinations, boarddd):
+
         if destinations == "r":
             if self.rect.x + 10 >= pazmer * 30 + 10 and (pazmer // 2 - 1) * 30 + 10 < self.rect.y < (
                     pazmer // 2) * 30 + 10:
