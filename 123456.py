@@ -46,24 +46,19 @@ def start_end_screen(lev, intro_text, WIDTH, HEIGHT, im):
             elif event.type == pygame.KEYDOWN or event.type == pygame.MOUSEBUTTONDOWN:
                 return
         pygame.display.flip()
-        # clock.tick(FPS)
 
 
 class Wall(pygame.sprite.Sprite):
     def __init__(self, x, y):
         super().__init__(walls_group, all_sprites)
-
-        #self.image = pygame.Surface([width, height])
-        #self.image.fill(color)
         self.image = tile_images['wal']
         self.image = pygame.transform.scale(self.image, (30, 30))
         self.image.set_colorkey((255, 255, 255))
         self.rect = self.image.get_rect()
-        #print(self.rect)
         self.mask = pygame.mask.from_surface(self.image)
         self.rect.x = x
         self.rect.y = y
-        walls_group.add(self) # ??????????
+        walls_group.add(self)
         all_sprites.add(self)
 
 
@@ -75,8 +70,6 @@ class Board(pygame.sprite.Sprite):
         self.top = 10
         self.cell_size = 30
         self.rects = []
-        #all_sprites.add(self)
-        #tiles_group.add(self)
 
     def render(self, screen, razm):
         # global x_pos
@@ -100,31 +93,24 @@ class Board(pygame.sprite.Sprite):
                     pygame.draw.rect(screen, pygame.Color(0, 0, 0), (10 + 30 * j, 10 + 30 * i, 30, 30))
                 else:
                     Wall(10 + 30 * j, 10 + 30 * i)
-                    pygame.draw.rect(screen, pygame.Color(0, 0, 255), (10 + 30 * j, 10 + 30 * i, 30, 30))
 
     def money(self, screen, pazmer):
-        # print(pazmer)
-        """for i in sp_mone:
-            print(i)
-        print(pazmer)"""
         for i in range(0, pazmer):
             for j in range(0, pazmer):
                 if sp_mone[i][j] == "1":
                     pygame.draw.circle(screen, pygame.Color(255, 215, 0), (10 + 30 * j + 15, 15 + 10 + 30 * i), 3)
 
     def eat_money(self, x, y):
-        #print((y - 10) // 30)
+        global count_money
         x1 = (x - 10) // 30
         y1 = (y - 10) // 30
-        #print(len(sp_mone), y1)
-        if sp_mone[int(y1)][int(x1)] == "1":  # !!!!!!!!!!!!!!!!!!!1
+        if sp_mone[int(y1)][int(x1)] == "1":
             sp_mone[int(y1)][int(x1)] = "0"
+            count_money += 1
 
     def checker(self, x, y, boardd):
         one = (x - 10) // 30
         sec = (y - 10) // 30
-        # print(len(boardd), one, sec, x, y, "'ccchhchhcc")
-
         return boardd[int(sec)][int(one)]
 
     def all_money(self):
@@ -149,12 +135,11 @@ class Character(pygame.sprite.Sprite):
         self.rect.x, self.rect.y = start_pos_level[file][lev - 1]
         all_sprites.add(self)
         player_group.add(self)
-        #self.mask = pygame.mask.from_surface(self.image)
+
     def moving(self, pazmer, destinations, boarddd, speed):
         speed = 3
         if destinations == "r":
             self.rect.x += speed
-            #print(40 + (pazmer * 30), self.rect.x)
             if self.rect.x >= (pazmer * 30) - 15:
                 self.rect.x -= speed
             if self.rect.x + 10 >= pazmer * 30 + 10 and (pazmer // 2 - 1) * 30 + 10 < self.rect.y < (
@@ -172,7 +157,7 @@ class Character(pygame.sprite.Sprite):
                 self.rect.x = pazmer * 30
             else:
                 for i in walls_group:
-                    if self.update(i) :
+                    if self.update(i):
                         self.rect.x += speed
 
         elif destinations == "u":
@@ -189,35 +174,8 @@ class Character(pygame.sprite.Sprite):
                 self.rect.y -= speed
             else:
                 for i in walls_group:
-
-                    if self.update(i) :
+                    if self.update(i):
                         self.rect.y -= speed
-
-        """def moving(self, pazmer, destinations, boarddd):
-        if destinations == "r":
-            if self.rect.x + 10 >= pazmer * 30 + 10 and (pazmer // 2 - 1) * 30 + 10 < self.rect.y < (
-                    pazmer // 2) * 30 + 10:
-                self.rect.x = 10
-            else:
-                # if self.rect.x < pazmer * 30 and board.checker(self.rect.x + 10, self.rect.y, boarddd) == "0":
-                # self.rect.x += self.speed
-                if self.rect.x < pazmer * 30 and board.checker(self.rect.x + 10, self.rect.y, boarddd) == "0":
-                    self.rect.x += self.speed
-                else:
-                    pass  # print(self.rect.x, pazmer, board.checker(self.rect.x + 10, self.rect.y, boarddd))
-        elif destinations == "l":
-
-            if self.rect.x - 10 <= 10 and (pazmer // 2 - 1) * 30 + 10 < self.rect.y < (pazmer // 2) * 30 + 10:
-                self.rect.x = pazmer * 30
-            else:
-                if self.rect.x > 10 and board.checker(self.rect.x - 10, self.rect.y, boarddd) == "0":
-                    self.rect.x -= self.speed
-        elif destinations == "u" and self.rect.y > 10 and board.checker(self.rect.x, self.rect.y - 10, boarddd) == "0":
-            self.rect.y -= self.speed
-        elif (destinations == "d" and self.rect.y < pazmer * 30 and
-              board.checker(self.rect.x, self.rect.y + 10, boarddd) == "0"):
-            self.rect.y += self.speed
-        #Board.eat_money(self, self.rect.x, self.rect.y)"""
 
     def previous_direction(self):
         self.pre_x = self.change_x
@@ -228,30 +186,9 @@ class Character(pygame.sprite.Sprite):
         self.change_y += y
 
     def update(self, walls):
-        """old_x = self.rect.left
-        new_x = old_x + self.change_x
-        prev_x = old_x + self.pre_x
-        self.rect.left = new_x
-
-        old_y = self.rect.top
-        new_y = old_y + self.change_y
-        prev_y = old_y + self.pre_y"""
-
-        """x_collide = pygame.sprite.spritecollide(self, walls, False)
-        if x_collide:
-            self.rect.left = old_x
-        else:
-            self.rect.top = new_y
-
-        y_collide = pygame.sprite.spritecollide(self, walls, False)
-        if y_collide:
-            self.rect.top = old_y"""
-
         if pygame.sprite.collide_mask(self, walls):
             return True
         return False
-
-
 
 
 class Pacman(Character):
@@ -261,19 +198,19 @@ class Pacman(Character):
 
     def moving(self, pazmer, destinations, boarddd, speed):
         Character.moving(self, pazmer, destinations, boarddd, speed)
-        #print( self.rect.x,  self.rect.y)
         Board.eat_money(self, self.rect.x, self.rect.y)
 
     def died(self, pac, ghos):
-        #print(player_group[0], player_group[1])
         if pygame.sprite.collide_mask(pac, ghos):
             return True
         return False
+
 
 class Ghost(Character):
     def __init__(self, lev):
         super().__init__('ghost_r', lev)
         self.mask = pygame.mask.from_surface(self.image)
+
 
 if __name__ == '__main__':
     sl_map = {
@@ -292,6 +229,7 @@ if __name__ == '__main__':
         'pac': [(8 * 30 + 10, 10 * 30 + 10), (10 * 30 + 10, 12 * 30 + 10), (12 * 30 + 10, 12 * 30 + 10)],
         'ghost_r': [(8 * 30 + 10, 7 * 30 + 10), (10 * 30 + 10, 9 * 30 + 10), (11 * 30 + 10, 9 * 30 + 10)]
     }
+    sl_level = {1: 100, 2 : 170, 3: 200}
     tile_width = tile_height = 50
     player = None
     all_sprites = pygame.sprite.Group()
@@ -300,15 +238,13 @@ if __name__ == '__main__':
     walls_group = pygame.sprite.Group()
     pygame.init()
     razmer1 = len(load_level(sl_map[1]))
-    # print(razmer1, "razmer1")
     x_pos = 30 * (razmer1 // 2) + 10
     y_pos = 30 * (razmer1 // 2 + 2) + 10
-    # print(x_pos, y_pos)
-
-
-    for level in [1, 2, 3]:
+    lev_bool = True
+    level = 1
+    while level <= 3:
+        smert = False
         BOARD = load_level(sl_map[level])
-        # print(BOARD)
         sp_mone = []
         for i in BOARD:
             s = []
@@ -318,12 +254,11 @@ if __name__ == '__main__':
                 else:
                     s.append("0")
             sp_mone.append(s)
-        # for i in sp_mone:
-        #    print(i)
+        count_money = 0
         razmer_screen = len(BOARD)
         intro_text = ["Pacman", "",
                       "Уровень " + str(level),
-                      "Ваша цель: собрать все монеты,",
+                      "Ваша цель: собрать " + str(sl_level[level]) + " монеты,",
                       "при этом не столкнувшись с приведениями"]
         start_end_screen(level, intro_text, 900, 600, 'fon1.jpg')
         pygame.display.set_caption('Pacman')
@@ -340,12 +275,10 @@ if __name__ == '__main__':
         while running:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
-                    # print(sp_mone)
                     running = False
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     k = event.pos
                     print(k)
-                    # print(board.checker(k[0], k[1]))
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         press = "l"
@@ -356,40 +289,38 @@ if __name__ == '__main__':
                     if event.key == pygame.K_DOWN:
                         press = "d"
                 pacmen.previous_direction()
-
-                if board.all_money():
-                    intro_text = ["Pacman",
-                                  "Вы выиграли!"]
-                    start_end_screen(level, intro_text, 800, 500, 'end.jpg')
-                    running = False
-
             screen.fill((0, 0, 0))
             Board.render(Board, screen, razmer_screen)
             board.money(screen, razmer_screen)
             player_group.draw(screen)
             walls_group.draw(screen)
-            if level == 2:
-                pass
-            # print(razmer_screen, "razmer_screen")
             pacmen.moving(razmer_screen, press, BOARD, 3)
-
             if q % 10 == 0:
                 a = random.choice(["u", "l", "r", "d"])
-                #print()
             ghost.moving(razmer_screen, a, BOARD, 3)
             pc, gh = player_group
             if pacmen.died(pc, gh):
-                print("STOOOOOOP")
+                running = False
+                intro_text = ["Pacman",
+                              "Вы проиграли!"]
+                start_end_screen(level, intro_text, 800, 500, 'end.jpg')
+                continue
             pygame.display.flip()
             q += 1
+            if count_money >= sl_level[level]:  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+                level += 1
+                running = False
+                intro_text = ["Pacman",
+                              "Вы выиграли!"]
+                start_end_screen(level, intro_text, 800, 500, 'end.jpg')
+                continue
         all_sprites.remove(pacmen)
         player_group.remove(pacmen)
-
         all_sprites.remove(ghost)
         player_group.remove(ghost)
-
         all_sprites.remove(ghost)
         for i in walls_group:
             walls_group.remove(i)
+
     intro_text = ["Вы прошли игру!"]  # !!!!!!!!!111
     start_end_screen(level, intro_text, 800, 500, 'end.jpg')
