@@ -48,6 +48,8 @@ class Character(pygame.sprite.Sprite):
 
             self.rect.top = new_y
 
+
+
         # if gate != False:
         #     gate_hit = pygame.sprite.spritecollide(self, gate, False)
         #     if gate_hit:
