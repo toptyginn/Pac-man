@@ -129,7 +129,7 @@ class Board(pygame.sprite.Sprite):
 
 class Character(pygame.sprite.Sprite):
     def __init__(self, file, lev):
-        super().__init__(player_group, all_sprites)
+        super().__init__(all_sprites)
         self.change_x = 0
         self.change_y = 0
         self.image = tile_images[file]
@@ -213,8 +213,8 @@ class Pacman(Character):
         Character.moving(self, pazmer, destinations, boarddd, speed)
         self.eat_money()
 
-    def died(self, pac, ghos):
-        if pygame.sprite.collide_mask(pac, ghos):
+    def died(self, ghos):
+        if pygame.sprite.collide_mask(self, ghos):
             return True
         return False
 
@@ -245,8 +245,15 @@ class Pacman(Character):
 
 
 class Ghost(Character):
-    def __init__(self, lev):
-        super().__init__('ghost_r', lev)
+    def __init__(self, lev, name):
+        if name == 'Blinky':
+            super().__init__('ghost_r', lev)
+        if name == 'Inky':
+            super().__init__('ghost_c', lev)
+        if name == 'Clyde':
+            super().__init__('ghost_o', lev)
+        if name == 'Pinky':
+            super().__init__('ghost_p', lev)
         self.mask = pygame.mask.from_surface(self.image)
 
 
@@ -265,7 +272,10 @@ if __name__ == '__main__':
     # 'money': load_imaghe('ghost1.png')
     start_pos_level = {
         'pac': [(8 * 30 + 10, 10 * 30 + 10), (10 * 30 + 10, 12 * 30 + 10), (12 * 30 + 10, 12 * 30 + 10)],
-        'ghost_r': [(8 * 30 + 10, 7 * 30 + 10), (10 * 30 + 10, 9 * 30 + 10), (11 * 30 + 10, 9 * 30 + 10)]
+        'ghost_r': [(8 * 30 + 10, 7 * 30 + 10), (10 * 30 + 10, 9 * 30 + 10), (11 * 30 + 10, 9 * 30 + 10)],
+        'ghost_c': [(8 * 30 + 10, 7 * 30 + 10), (10 * 30 + 10, 9 * 30 + 10), (11 * 30 + 10, 9 * 30 + 10)],
+        'ghost_o': [(8 * 30 + 10, 7 * 30 + 10), (10 * 30 + 10, 9 * 30 + 10), (11 * 30 + 10, 9 * 30 + 10)],
+        'ghost_p': [(8 * 30 + 10, 7 * 30 + 10), (10 * 30 + 10, 9 * 30 + 10), (11 * 30 + 10, 9 * 30 + 10)]
     }
     sl_level = {1: 100, 2 : 170, 3: 200}
     tile_width = tile_height = 50
@@ -275,6 +285,7 @@ if __name__ == '__main__':
     player_group = pygame.sprite.Group()
     walls_group = pygame.sprite.Group()
     money_group = pygame.sprite.Group()
+    npc_group = pygame.sprite.Group()
     pygame.init()
     razmer1 = len(load_level(sl_map[1]))
     x_pos = 30 * (razmer1 // 2) + 10
@@ -308,8 +319,16 @@ if __name__ == '__main__':
         running = True
         press = "r"
         pacmen = Pacman(level)
-        ghost = Ghost(level)
-        a = random.choice(["u", "l", "r", "d"])
+        Blinky = Ghost(level, 'Blinky')
+        Inky = Ghost(level, 'Inky')
+        Clyde = Ghost(level, 'Clyde')
+        Pinky = Ghost(level, 'Pinky')
+        npc_group.add(Blinky, Inky, Clyde, Pinky)
+        player_group.add(pacmen)
+        blinky_move = random.choice(["u", "l", "r", "d"])
+        clyde_move = random.choice(["u", "l", "r", "d"])
+        inky_move = random.choice(["u", "l", "r", "d"])
+        pinky_move = random.choice(["u", "l", "r", "d"])
         q = 0
         while running:
             for event in pygame.event.get():
@@ -334,19 +353,26 @@ if __name__ == '__main__':
             money_group.draw(screen)
             player_group.draw(screen)
             walls_group.draw(screen)
+            npc_group.draw(screen)
 
             pacmen.moving(razmer_screen, press, BOARD, 3)
             pacmen.eat_money()
             if q % 10 == 0:
-                a = random.choice(["u", "l", "r", "d"])
-            ghost.moving(razmer_screen, a, BOARD, 3)
-            pc, gh = player_group
-            if pacmen.died(pc, gh):
-                running = False
-                intro_text = ["Pacman",
-                              "Вы проиграли!"]
-                start_end_screen(level, intro_text, 800, 500, 'end.jpg')
-                continue
+                blinky_move = random.choice(["u", "l", "r", "d"])
+                clyde_move = random.choice(["u", "l", "r", "d"])
+                inky_move = random.choice(["u", "l", "r", "d"])
+                pinky_move = random.choice(["u", "l", "r", "d"])
+            Blinky.moving(razmer_screen, blinky_move, BOARD, 3)
+            Clyde.moving(razmer_screen, clyde_move, BOARD, 3)
+            Inky.moving(razmer_screen, inky_move, BOARD, 3)
+            Pinky.moving(razmer_screen, pinky_move, BOARD, 3)
+            for ghost in npc_group:
+                if pacmen.died(ghost):
+                    running = False
+                    intro_text = ["Pacman",
+                                  "Вы проиграли!"]
+                    start_end_screen(level, intro_text, 800, 500, 'end.jpg')
+                    continue
             pygame.display.flip()
             q += 1
             if count_money >= sl_level[level]:  # !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
@@ -358,9 +384,9 @@ if __name__ == '__main__':
                 continue
         all_sprites.remove(pacmen)
         player_group.remove(pacmen)
-        all_sprites.remove(ghost)
-        player_group.remove(ghost)
-        all_sprites.remove(ghost)
+        for ghost in npc_group:
+            all_sprites.remove(ghost)
+            npc_group.remove(ghost)
         for i in walls_group:
             walls_group.remove(i)
 
