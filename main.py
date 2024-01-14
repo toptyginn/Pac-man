@@ -199,8 +199,17 @@ class Pacman(Character):
         self.mask = pygame.mask.from_surface(self.image)
         self.score = 0
         self.collides = []
+        self.image_copy = self.image
 
     def moving(self, pazmer, destinations, boarddd, speed):
+        if destinations == 'r':
+            self.return_to_origin()
+        if destinations == 'l':
+            self.flip(self.image_copy, self.rect.topleft)
+        if destinations == 'u':
+            self.blitRotateCenter(self.image_copy, self.rect.topleft, 90)
+        if destinations == 'd':
+            self.blitRotateCenter(self.image_copy, self.rect.topleft, 270)
         Character.moving(self, pazmer, destinations, boarddd, speed)
         self.eat_money()
 
@@ -214,6 +223,25 @@ class Pacman(Character):
             self.score = len(self.collides) * 10
             money_group.remove(self.collides[-1])
             print('+score')
+
+    def return_to_origin(self):
+        self.image = self.image_copy
+        self.image_copy.set_colorkey((255, 255, 255))
+
+    def flip(self, image, topleft):
+        mirror_image = pygame.transform.flip(image, True, False)
+        mirror_image.set_colorkey((255, 255, 255))
+        new_rect = mirror_image.get_rect(center=image.get_rect(topleft=topleft).center)
+        self.image = mirror_image
+
+    def blitRotateCenter(self, image, topleft, angle):
+
+        rotated_image = pygame.transform.rotate(image, angle)
+        rotated_image = pygame.transform.scale(rotated_image, (30, 30))
+        rotated_image.set_colorkey((255, 255, 255))
+
+        new_rect = rotated_image.get_rect(center=image.get_rect(topleft=topleft).center)
+        self.image = rotated_image
 
 
 class Ghost(Character):
@@ -309,7 +337,6 @@ if __name__ == '__main__':
 
             pacmen.moving(razmer_screen, press, BOARD, 3)
             pacmen.eat_money()
-            print(pacmen.collides)
             if q % 10 == 0:
                 a = random.choice(["u", "l", "r", "d"])
             ghost.moving(razmer_screen, a, BOARD, 3)
