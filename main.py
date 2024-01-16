@@ -2,6 +2,8 @@ import pygame
 import sys
 import os
 import random
+from pygame.locals import *
+
 
 
 def load_level(filename):
@@ -87,9 +89,8 @@ class Wall(pygame.sprite.Sprite):
         pygame.draw.rect(screen, self.color, self.rect)
 
 
-class Board(pygame.sprite.Sprite):
+class Board():
     def __init__(self, width):
-        super().__init__(tiles_group, all_sprites)
         self.pazmer = width
         self.left = 10
         self.top = 10
@@ -330,7 +331,8 @@ if __name__ == '__main__':
         start_end_screen(level, intro_text, 900, 600, 'fon1.jpg')
         pygame.display.set_caption('Pacman')
         size = width, height = razmer_screen * 30 + 20, razmer_screen * 30 + 20
-        screen = pygame.display.set_mode(size)
+        flags = FULLSCREEN | DOUBLEBUF
+        screen = pygame.display.set_mode(size, flags)
         board = Board(razmer_screen)
 
         pacmen = Pacman(level)
@@ -351,9 +353,6 @@ if __name__ == '__main__':
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     pacmen.living = False
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    k = event.pos
-                    print(k)
                 if event.type == pygame.KEYDOWN:
                     if event.key == pygame.K_LEFT:
                         pacmen.press = 'l'
@@ -363,14 +362,13 @@ if __name__ == '__main__':
                         pacmen.press = "u"
                     if event.key == pygame.K_DOWN:
                         pacmen.press = "d"
+                    if event.key == pygame.K_ESCAPE:
+                        pacmen.living = False
                 pacmen.previous_direction()
             screen.fill((0, 0, 0))
             board.render(screen, razmer_screen)
             board.money(razmer_screen)
-            money_group.draw(screen)
-            player_group.draw(screen)
-            walls_group.draw(screen)
-            npc_group.draw(screen)
+            all_sprites.draw(screen)
 
             pacmen.moving(razmer_screen, BOARD, 3)
             pacmen.eat_money()
@@ -379,10 +377,10 @@ if __name__ == '__main__':
                 Clyde.press = random.choice(["u", "l", "r", "d"])
                 Inky.press = random.choice(["u", "l", "r", "d"])
                 Pinky.press = random.choice(["u", "l", "r", "d"])
-            Blinky.moving(razmer_screen, BOARD, 3)
-            Clyde.moving(razmer_screen, BOARD, 3)
-            Inky.moving(razmer_screen, BOARD, 3)
-            Pinky.moving(razmer_screen, BOARD, 3)
+            Blinky.moving(razmer_screen, BOARD, v)
+            Clyde.moving(razmer_screen, BOARD, v)
+            Inky.moving(razmer_screen, BOARD, v)
+            Pinky.moving(razmer_screen, BOARD, v)
             for ghost in npc_group:
                 if pacmen.died(ghost):
                     intro_text = ["Pacman",
